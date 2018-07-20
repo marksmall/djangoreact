@@ -1,15 +1,11 @@
 from django.conf import settings
-from django.conf.urls import url
 from django.contrib import admin
-from django.urls import include, path
-
-from . import views
+from django.urls import include, path, re_path
+from django.views.generic import TemplateView
 
 urlpatterns = [
-    # path('stormer/', include('stormer.urls')),
-    # path('flooder/', include('flooder.urls')),
     path('admin/', admin.site.urls),
-    url(r'^', views.FrontendAppView.as_view()),
+    re_path('.*', TemplateView.as_view(template_name='index.html')),
 ]
 
 if settings.DEBUG:

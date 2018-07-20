@@ -58,7 +58,7 @@ class Common(Configuration):
     TEMPLATES = [
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
-            'DIRS': ['staticfiles/client'],
+            'DIRS': [os.path.join(BASE_DIR, 'client/build')],
             'APP_DIRS': True,
             'OPTIONS': {
                 'context_processors': [
@@ -120,9 +120,9 @@ class Common(Configuration):
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-    REACT_APP_DIR = os.path.join(BASE_DIR, 'client')
     STATICFILES_DIRS = [
-        ('client', os.path.join(REACT_APP_DIR, 'build'),)
+        os.path.join(BASE_DIR, 'client/build/static')
+        # ('client', os.path.join(REACT_APP_DIR, 'build'),)
     ]
 
     AUTH_USER_MODEL = 'users.User'
