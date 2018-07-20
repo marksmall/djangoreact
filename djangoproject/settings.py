@@ -58,7 +58,7 @@ class Common(Configuration):
     TEMPLATES = [
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
-            'DIRS': [],
+            'DIRS': ['staticfiles/client'],
             'APP_DIRS': True,
             'OPTIONS': {
                 'context_processors': [
@@ -78,7 +78,7 @@ class Common(Configuration):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'django_api',
+            'NAME': 'django',
             'USER': 'django',
             'PASSWORD': 'django',
             'HOST': '127.0.0.1',
@@ -122,7 +122,7 @@ class Common(Configuration):
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
     REACT_APP_DIR = os.path.join(BASE_DIR, 'client')
     STATICFILES_DIRS = [
-        os.path.join(REACT_APP_DIR, 'build', 'static'),
+        ('client', os.path.join(REACT_APP_DIR, 'build'),)
     ]
 
     AUTH_USER_MODEL = 'users.User'
@@ -134,7 +134,7 @@ class Development(Common):
     """
     DEBUG = True
 
-    ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = ['*']
 
     INTERNAL_IPS = [
         '127.0.0.1'
