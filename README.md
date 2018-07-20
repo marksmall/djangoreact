@@ -1,91 +1,71 @@
-# Django 2.0+ project template
+# Django/create-react-app integration
 
-[![Dependency Status](https://gemnasium.com/jpadilla/django-project-template.svg)](https://gemnasium.com/jpadilla/django-project-template)
+This project is an example of binding a **Django 2** back-end with a **create-react-app** client view.
 
-This is a simple Django 2.0+ project template with my preferred setup. Most Django project templates make way too many assumptions or are just way too complicated. I try to make the least amount of assumptions possible while still trying provide a useful setup. Most of my projects are deployed to Heroku, so this is optimized for that but is not necessary.
+## Setup and run
 
-## Features
+1.  Install **package dependencies**: `apt-get install python3-django stunnel4`
+1.  Install **python dependencies**: `pip3 install python3-django pipenv`
+1.  Clone repo: `git clone https://github.com/marksmall/djangoreact.git`
+1.  `cd djangoreact`
+1.  Enter virtual environment: `pipenv shell`
+1.  Install python deps: `pipenv install`
+1.  Install client deps: `cd client && yarn install && yarn build && cd ..`
+1.  Migrate models: `$PROJ_ROOT/manage.py migrations`
+1.  Start servers: `,/https.sh`
 
-- Django 2.0+
-- Uses [Pipenv](https://github.com/kennethreitz/pipenv) - the officially recommended Python packaging tool from Python.org.
-- Development, Staging and Production settings with [django-configurations](https://django-configurations.readthedocs.org).
-- Get value insight and debug information while on Development with [django-debug-toolbar](https://django-debug-toolbar.readthedocs.org).
-- Collection of custom extensions with [django-extensions](http://django-extensions.readthedocs.org).
-- HTTPS and other security related settings on Staging and Production.
-- Procfile for running gunicorn with New Relic's Python agent.
-- PostgreSQL database support with psycopg2.
+**NOTE:** Only install `stunnel4` if you want to test using **HTTPS** by running `$PROJ_ROOT/https.sh`. Otherwise, start django as normal: `$PROJ_ROOT/manage.py runserver`.
 
-## How to install
+## Files of interest
 
-```bash
-$ django-admin.py startproject \
-  --template=https://github.com/jpadilla/django-project-template/archive/master.zip \
-  --name=Procfile \
-  --extension=py,md,env \
-  project_name
-$ mv example.env .env
-$ pipenv install --dev
+### settings.py
+
+Change the `DIRS` line of `TEMPLATES`, so the correct `index.html` (in `build` directory) is used in the `TemplateView`:
+
+```python
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'client/build')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 ```
 
-## Environment variables
+Add `STATICFILES_DIRS` list so the correct client assets are used (add other directories if assets needed for other django apps):
 
-These are common between environments. The `ENVIRONMENT` variable loads the correct settings, possible values are: `DEVELOPMENT`, `STAGING`, `PRODUCTION`.
-
-```
-ENVIRONMENT='DEVELOPMENT'
-DJANGO_SECRET_KEY='dont-tell-eve'
-DJANGO_DEBUG='yes'
+```python
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'client/build/static')
+]
 ```
 
-These settings(and their default values) are only used on staging and production environments.
+### views.py
 
-```
-DJANGO_SESSION_COOKIE_SECURE='yes'
-DJANGO_SECURE_BROWSER_XSS_FILTER='yes'
-DJANGO_SECURE_CONTENT_TYPE_NOSNIFF='yes'
-DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS='yes'
-DJANGO_SECURE_HSTS_SECONDS=31536000
-DJANGO_SECURE_REDIRECT_EXEMPT=''
-DJANGO_SECURE_SSL_HOST=''
-DJANGO_SECURE_SSL_REDIRECT='yes'
-DJANGO_SECURE_PROXY_SSL_HEADER='HTTP_X_FORWARDED_PROTO,https'
+Add new `TemplateView` to refer to the `build` directory `index.html` file:
+
+```python
+from django.views.generic import TemplateView
+
+
+class FrontendAppView(TemplateView):
+    template_name = 'index.html'
 ```
 
-## Deployment
+### urls.py
 
-It is possible to deploy to Heroku or to your own server.
+Add a new catch-all pattern:
 
-### Heroku
-
-```bash
-$ heroku create
-$ heroku addons:add heroku-postgresql:hobby-dev
-$ heroku addons:add newrelic
-$ heroku pg:promote DATABASE_URL
-$ heroku config:set ENVIRONMENT=PRODUCTION
-$ heroku config:set DJANGO_SECRET_KEY=`./manage.py generate_secret_key`
+```python
+re_path('.*', TemplateView.as_view(template_name='index.html')),
 ```
 
-## License
-
-The MIT License (MIT)
-
-Copyright (c) 2012-2017 José Padilla
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+**NOTE:** This must come after all other views, so routing on the client-side (via react-router, although not implemented) can work.
