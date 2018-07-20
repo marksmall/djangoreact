@@ -26,8 +26,6 @@ class Common(Configuration):
 
     # Application definition
     INSTALLED_APPS = [
-        'stormer.apps.StormerConfig',
-        'flooder.apps.FlooderConfig',
         'django.contrib.admin',
         'django.contrib.auth',
         'django.contrib.contenttypes',
